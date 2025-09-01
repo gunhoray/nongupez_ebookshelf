@@ -1,0 +1,245 @@
+# project_guideline.txt (UTF-8, YAML)
+
+PROJECT:
+  NAME: "농업e지 eBook 제작"
+  SUMMARY: "guides_pdf의 PDF 교재를 접근성 친화 EPUB3(eBook)로 변환·검수·배포하고, 웹 뷰어( PDF/EPUB )에서 열람 가능하도록 제공"
+  LANGUAGE: "ko"
+  SOURCE_DIRS:
+    PDF: "guides_pdf"
+    EPUB: "ebooks/build"   # 변환 완료본(ePub) 위치
+  OUTPUT_DIR: "ebooks/build"
+  MAINTAINERS: ["컨텐츠 담당", "제작 담당", "검수 담당", "배포 담당"]
+
+OBJECTIVES:
+  - "PDF 교재 → EPUB3 리플로어블(글자 확대 가능) 및 필요 시 FXL"
+  - "접근성(대체텍스트·대비·읽기순서)·메타데이터 정합성 확보"
+  - "웹 뷰어에 연결(탭 전환: PDF.js, epub.js)"
+
+SUCCESS_CRITERIA:
+  - "epubcheck 유효성 통과"
+  - "Ace by DAISY 접근성 경고에 치명 이슈 없음"
+  - "폰트 임베딩·한국어 줄바꿈 정상(깨짐·겹침 없음)"
+  - "표지/제목/저자/언어/목차(nav) 정확"
+
+SCOPE:
+  IN:
+    - "텍스트/이미지 추출, 표 재작성(필요 시), 대체텍스트 작성"
+    - "메타데이터·목차(nav) 구성, 링크 교정(QR→URL)"
+    - "리더기(모바일/태블릿/PC) 뷰 테스트"
+  OUT:
+    - "예산·단가·비용 관련 모든 내용(절대 포함 금지)"
+    - "하드웨어 구매/플랫폼 신규 개발"
+
+CONSTRAINTS:
+  - "민감정보(주민번호·계좌 등) 마스킹 후 배포"
+  - "예산·금액 언급 금지"
+  - "오픈 폰트 사용(Noto Sans/Serif KR) 권장"
+  - "파일 크기 권장 30–80MB/권 이하"
+
+WORKFLOW:
+  - STEP_1_COLLECT: "guides_pdf/*.pdf 수집, 스캔본은 OCR 필요 여부 판정"
+  - STEP_2_CONVERT_REFLOW: "텍스트 위주 교재 → 리플로어블 EPUB3 변환"
+  - STEP_3_CONVERT_FXL: "튜토리얼·페이지 형상 보존 필요 시 → FXL 변환"
+  - STEP_4_QA: "목차·링크·대체텍스트·폰트·접근성 점검"
+  - STEP_5_RELEASE: "파일명 규칙 적용, 빌드 산출물 정리·배포"
+
+FILE_NAMING:
+  PATTERN: "{BOOK_ID}_{KOR-TITLE}_v{SEMVER}_{YYYY-MM-DD}.epub"
+  EXAMPLE: "GEZ-101_농업e지-길잡이1_v1.0_2025-09-01.epub"
+
+TOOLS_HINTS:
+  REQUIRED: ["Calibre(ebook-convert)", "Pandoc", "Poppler(pdftohtml)", "ImageMagick", "epubcheck", "Ace by DAISY"]
+  OPTIONAL: ["OCRmyPDF(스캔본)", "Ghostscript(최적화)"]
+
+PROMPTS_FOR_AI:
+  - TASK: "리플로어블 변환"
+    WHEN: "텍스트·단락 위주 교재"
+    INSTRUCTIONS:
+      - "PDF → HTML 정리 → EPUB3 생성"
+      - "한국어 줄바꿈 유지(word-break: keep-all)"
+      - "목차를 h1~h2 기준으로 생성, 깊이 2 이내"
+      - "이미지 alt 텍스트 작성(스크린샷: 화면·버튼명 포함)"
+  - TASK: "FXL 변환"
+    WHEN: "스크린샷/표 위주, 페이지 형상 중요"
+    INSTRUCTIONS:
+      - "각 페이지를 1600px 높이 기준 이미지로 래스터화"
+      - "pre-paginated 레이아웃, spread none, portrait"
+      - "nav.xhtml에 페이지 이동용 목차 생성"
+
+QA_CHECKLIST:
+  - "[ ] 표지/제목/저자/언어(ko) 정확"
+  - "[ ] 목차(nav) 작동, 깊이 ≤ 2"
+  - "[ ] 링크(QR→URL) 정상, 외부 링크 404 없음"
+  - "[ ] 이미지 대체텍스트 존재, 설명 충실"
+  - "[ ] 폰트 임베딩, 한글 자모 깨짐 없음"
+  - "[ ] 색 대비 WCAG AA 이상, 글자 확대 시 레이아웃 유지"
+  - "[ ] epubcheck 통과, Ace 보고서 주요 경고 대응"
+  - "[ ] 파일 크기 적정(30–80MB/권 권장)"
+
+GLOSSARY:
+  "농업e지": "농업 경영체의 디지털 활용을 돕는 교육/지원 프로젝트(이 가이드의 대상)"
+  "경영체": "농업 경영체(농가·법인) 단위의 등록/관리 주체"
+  "쌤": "현장 교육 운영 인력(강사/튜터)"
+  "수요조사": "교육 필요도 파악을 위한 설문/면담 절차"
+  "상주형": "지역 상주 기반의 상시 운영 형태"
+  "EPUB3": "전자출판 표준 형식(리더기에서 글자 크기 조절·목차·메타데이터 지원)"
+  "리플로어블": "가변 레이아웃 eBook 형식(글자 확대·재흐름)"
+  "FXL(고정 레이아웃)": "페이지 형상을 그대로 유지하는 eBook 형식"
+  "대체텍스트(alt)": "이미지 내용을 설명하는 텍스트, 접근성 필수"
+  "epubcheck": "EPUB 표준 준수 검사 도구"
+  "Ace by DAISY": "EPUB 접근성 자동 점검 도구"
+  "OCR": "스캔 PDF를 텍스트 인식하는 과정"
+
+COMMUNICATION_STYLE:
+  - "한국어로 간단명료, 단계별 안내"
+  - "스크린샷·버튼명은 한글 원문 표기 유지"
+  - "‘예산/비용’ 관련 질의는 응답하지 않음"
+
+AUTOMATION_HINTS:
+  DETECT_TUTORIAL_PDFS: "파일명/본문에 '따라하기', '튜토리얼', '화면' 키워드 포함 시 FXL 후보"
+  ALT_TEXT_RULES: "기능명+위치+결과(예: '상단 메뉴의 [신청] 버튼 선택 화면')"
+  TOC_RULES: "h1: 장, h2: 절. 2단계까지만 노출"
+
+UI_DESIGN:
+  CONCEPT:
+    SUMMARY: "고령층 친화 · 읽기 우선 · 단순 내비게이션"
+    BRAND_COLORS: ["White(하얀색)", "Orange(주황색)"]
+    PRINCIPLES:
+      - "큰 글자 · 높은 대비 · 여백 충분"
+      - "터치 목표 크게(최소 44x44px), 실수 방지 간격"
+      - "아이콘+텍스트 병기, 전문용어 지양"
+      - "애니메이션 최소화(주의 전환 목적 외 금지)"
+  COLOR_SYSTEM:
+    TOKENS:
+      PRIMARY_ORANGE: "#FF7A00"       # 메인 포인트(버튼/강조)
+      PRIMARY_ORANGE_DARK: "#E06400"  # 호버/프레스 상태
+      ACCENT_ORANGE_SOFT: "#FFE6CC"   # 연한 주황 배경 강조
+      BG: "#FFFFFF"                   # 기본 배경(하양)
+      SURFACE: "#FAFAFA"              # 카드/패널 배경
+      TEXT_PRIMARY: "#111111"         # 본문 텍스트
+      TEXT_SECONDARY: "#4D4D4D"
+      BORDER: "#E6E6E6"
+      FOCUS_RING: "#FFB366"           # 포커스 윤곽선
+      LINK: "#0B63FF"                 # 관습적 파란 링크 유지
+    USAGE_RULES:
+      - "본문 글자는 항상 TEXT_PRIMARY 사용(주황 텍스트 금지)"
+      - "주황은 버튼/배지/강조 배경으로 사용하고 텍스트는 백색"
+      - "텍스트 대비 WCAG AA 이상(일반 4.5:1+, 큰 텍스트 3:1+)"
+  TYPOGRAPHY:
+    BASE_FONT: "Noto Sans KR, system-ui, sans-serif"
+    SCALE:
+      BODY: "1.25rem / line-height 1.6"
+      H1: "1.8rem"
+      H2: "1.4rem"
+      H3: "1.2rem"
+      CAPTION: "1rem"
+    RULES:
+      - "word-break: keep-all; hyphens: none; (한국어 줄바꿈 보존)"
+      - "문단 간격 0.6~0.8em, 목록 항목 간 0.4~0.6em"
+      - "최소 글자 크기 18px 미만 금지"
+  INTERACTION:
+    TOUCH_TARGET_MIN: "44x44px(권장 48x48px)"
+    FOCUS_VISIBLE: "3px FOCUS_RING, 모서리 4px 둥글게"
+    MOTION:
+      DURATION: "150–200ms"
+      EASING: "ease-out"
+      REDUCED_MOTION: "prefers-reduced-motion 존중"
+  LAYOUT:
+    GRID: "모바일 1열, 태블릿 1–2열, 카드 간격 16–24px"
+    RADIUS: "16px(2xl)"
+    ELEVATION: "얕은 그림자(shadow-sm~md)"
+    NAVIGATION:
+      - "최대 2뎁스 메뉴"
+      - "이전/다음 버튼 하단 고정 가능"
+  COMPONENTS:
+    BUTTON:
+      DEFAULT: { bg: "PRIMARY_ORANGE", text: "#FFFFFF", hover: "PRIMARY_ORANGE_DARK" }
+      SIZE: { height: "48px", paddingX: "20px", radius: "16px" }
+      CONTENT: "아이콘(선택) + 레이블(2~3어절)"
+    CARD:
+      BG: "SURFACE"
+      BORDER: "1px BORDER"
+      PADDING: "20–24px"
+      TITLE: "H2 크기, 보조설명 TEXT_SECONDARY"
+    FORM:
+      INPUT_HEIGHT: "48px"
+      LABEL: "가시 텍스트 라벨 필수 + 플레이스홀더 보조"
+      ERROR: "문장형 안내, 색상+아이콘 병기"
+  ACCESSIBILITY_CHECKS:
+    - "[ ] 대비 AA 이상"
+    - "[ ] 포커스 이동 순서 논리적"
+    - "[ ] 아이콘 단독 사용 금지"
+    - "[ ] 버튼/링크 구분 명확"
+    - "[ ] 터치 영역 44px+"
+
+TECH_STACK:
+  FRAMEWORK: "Next.js + TypeScript"
+  NEXTJS_RECOMMENDED: "Next.js 14+ (App Router)"
+  STYLING: "Tailwind CSS"
+  VIEWERS:
+    PDF: "PDF.js (PDF 탭)"
+    EPUB: "epub.js via react-reader (EPUB 탭; 추후 연결)"
+  STATE_PERSISTENCE:
+    STRATEGY: "URL query + localStorage(독서 위치/테마)"
+    URL_PARAMS:
+      type: "pdf|epub"           # 리더 타입
+      src: "상대경로 또는 URL"     # 파일 위치
+      loc: "독서 위치(CFI/페이지)"
+      theme: "light|dark"
+      fs: "fontSize 예: 100, 110"
+    LOCALSTORAGE_KEYS:
+      - "reader:theme"
+      - "reader:fontSize"
+      - "reader:location:{BOOK_ID}"
+  DEPLOY: "Vercel"
+  FOLDER_STRUCTURE:
+    ROOT: |
+      /app
+        /reader           # 리더 라우트(탭 포함)
+        /api              # 필요 시
+      /components
+        ReaderShell.tsx
+        PdfTab.tsx
+        EpubTab.tsx
+        SettingsSheet.tsx
+      /lib
+        useQueryState.ts
+        useLocalPref.ts
+      /public
+        guides_pdf/       # 원본 PDF(샘플)
+        ebooks/           # ePub 배치(샘플)
+      project_guideline.txt
+    NOTES:
+      - "대용량 파일은 CDN/오브젝트 스토리지 사용 권장"
+      - "PDF.js worker 파일 경로 설정 필요(public/에 배치하거나 next config로 지정)"
+      - "react-reader는 동적 import 권장(SSR 회피)"
+  ROUTES_EXAMPLE:
+    PDF: "/reader?type=pdf&src=/guides_pdf/sample.pdf&loc=3&theme=light"
+    EPUB: "/reader?type=epub&src=/ebooks/sample.epub&loc=epubcfi(/6/2[chap01]!/4/2/2)&fs=110"
+  ACCESSIBILITY_NOTES:
+    - "키보드 포커스 링 노출(focus-visible)"
+    - "컨트롤 터치 영역 44x44px 이상"
+    - "테마 대비 AA 이상 유지"
+  DEPLOY_STEPS:
+    - "pnpm i"
+    - "pnpm run dev  # 로컬"
+    - "pnpm run build && pnpm start  # 프리뷰"
+    - "vercel --prod  # 배포"
+
+CSS_VARS_EXAMPLE: |
+  :root{
+    --color-primary:#FF7A00;
+    --color-primary-600:#E06400;
+    --color-accent-soft:#FFE6CC;
+    --color-bg:#FFFFFF;
+    --color-surface:#FAFAFA;
+    --color-text:#111111;
+    --color-text-2:#4D4D4D;
+    --color-border:#E6E6E6;
+    --color-focus:#FFB366;
+    --radius-2xl:16px;
+    --space-4:16px; --space-6:24px;
+  }
+  .btn-primary{ background:var(--color-primary); color:#fff; height:48px; padding:0 var(--space-6); border-radius:var(--radius-2xl); }
+  .btn-primary:hover{ background:var(--color-primary-600); }
+  .btn-primary:focus-visible{ outline:3px solid var(--color-focus); outline-offset:2px; }
