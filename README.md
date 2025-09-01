@@ -1,3 +1,7 @@
+
+<img width="1912" height="906" alt="스크린샷 2025-09-02 000108" src="https://github.com/user-attachments/assets/20f6ae9a-b967-43aa-b14f-c74d563b72ac" />
+<img width="1913" height="903" alt="스크린샷 2025-09-02 000125" src="https://github.com/user-attachments/assets/bc169576-ac84-47dc-a7fc-f39d49cef39f" />
+
 # 농업e지 eBook 제작 프로젝트
 
 ## 📖 프로젝트 개요
