@@ -13,10 +13,10 @@ const ReactReader = dynamic(() => import('react-reader'), {
 interface EpubViewerProps {
   src: string;
   title: string;
-  author: string;
+  subtitle: string;
 }
 
-export default function EpubViewer({ src, title, author }: EpubViewerProps) {
+export default function EpubViewer({ src, title, subtitle }: EpubViewerProps) {
   const [location, setLocation] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
@@ -40,7 +40,7 @@ export default function EpubViewer({ src, title, author }: EpubViewerProps) {
           </Link>
           <div className="book-info-header">
             <div className="book-title-header">{title}</div>
-            <div className="book-author-header">{author}</div>
+            <div className="book-subtitle-header">{subtitle}</div>
           </div>
         </div>
         <div className="header-right">

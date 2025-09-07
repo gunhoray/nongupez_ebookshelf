@@ -4,21 +4,27 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import PdfViewer from '@/components/PdfViewer';
 import EpubViewer from '@/components/EpubViewer';
+import { tocData, TocItem } from '@/lib/tocData';
+import { formatFileNameToTitle, getSubtitleForFile } from '@/lib/utils';
 
 export default function ReaderPage() {
   const searchParams = useSearchParams();
   const type = searchParams.get('type');
   const src = searchParams.get('src');
-  const [bookInfo, setBookInfo] = useState<{title: string, author: string} | null>(null);
+  const [bookInfo, setBookInfo] = useState<{title: string, subtitle: string, tocItems: TocItem[]} | null>(null);
 
   useEffect(() => {
     if (src) {
       // URL에서 책 정보 추출
-      const fileName = src.split('/').pop()?.replace('.pdf', '').replace('.epub', '');
+      const fileName = src.split('/').pop();
       if (fileName) {
+        const decodedFileName = decodeURIComponent(fileName);
+        const tocItems = tocData[decodedFileName] || [];
+        
         setBookInfo({
-          title: decodeURIComponent(fileName),
-          author: '' // 저자 정보 제거
+          title: formatFileNameToTitle(decodedFileName),
+          subtitle: getSubtitleForFile(decodedFileName),
+          tocItems: tocItems
         });
       }
     }
@@ -44,14 +50,15 @@ export default function ReaderPage() {
         <PdfViewer 
           src={src} 
           title={bookInfo.title} 
-          author={bookInfo.author} 
+          subtitle={bookInfo.subtitle}
+          tocItems={bookInfo.tocItems}
         />
       )}
       {type === 'epub' && bookInfo && (
         <EpubViewer 
           src={src} 
           title={bookInfo.title} 
-          author={bookInfo.author} 
+          subtitle={bookInfo.subtitle} 
         />
       )}
     </div>

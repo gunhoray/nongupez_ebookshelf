@@ -1,34 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+import { formatFileNameToTitle, getEmojiForFile, getSubtitleForFile } from '@/lib/utils';
+import PdfThumbnail from '@/components/PdfThumbnail';
 
 interface Book {
   id: number;
   title: string;
-  author: string;
+  subtitle: string;
   emoji: string;
   type: 'pdf' | 'epub';
   filename?: string;
 }
 
-const books: Book[] = [
-  {
-    id: 1,
-    title: '농업e지 안내서',
-    author: '농촌진흥청',
-    emoji: '🌱',
-    type: 'pdf',
-    filename: '250808_농업e지_안내서_기존.pdf'
-  },
-  {
-    id: 2,
-    title: '농업e지 경영체교재',
-    author: '농촌진흥청',
-    emoji: '🚜',
-    type: 'pdf',
-    filename: '250814_농업e지_경영체교재_기본.pdf'
-  }
+// 파일명 배열에서 동적으로 책 정보 생성
+const pdfFilenames = [
+  '250808_농업e지_안내서_기존.pdf',
+  '250814_농업e지_경영체교재_기본.pdf'
 ];
+
+const books: Book[] = pdfFilenames.map((filename, index) => ({
+  id: index + 1,
+  title: formatFileNameToTitle(filename),
+  subtitle: getSubtitleForFile(filename),
+  emoji: getEmojiForFile(filename),
+  type: 'pdf' as const,
+  filename: filename
+}));
 
 export default function Home() {
   const [selectedType, setSelectedType] = useState<'all' | 'pdf' | 'epub'>('all');
@@ -76,11 +74,16 @@ export default function Home() {
                   onClick={() => openEbook(book)}
                 >
                   <div className="book-cover">
-                    {book.emoji}
+                    <PdfThumbnail
+                      src={`/images/thumbnails/${book.filename?.includes('안내서') ? '안내가이드_썸네일.png' : book.filename?.includes('경영체') ? '농업경영체_썸네일.png' : 'default.png'}`}
+                      alt={book.title}
+                      className="book-thumbnail"
+                      fallbackEmoji={book.emoji}
+                    />
                   </div>
                   <div className="book-info">
                     <div className="book-title">{book.title}</div>
-                    <div className="book-author">{book.author}</div>
+                    <div className="book-subtitle">{book.subtitle}</div>
                     <div className="book-buttons">
                       <button className="book-button">
                         📖 책 읽기

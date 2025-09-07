@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import * as pdfjsLib from 'pdfjs-dist';
+import { TocItem } from '@/lib/tocData';
 
 // PDF.js worker 설정 - Next.js public 폴더에서 worker 로드
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
@@ -12,10 +13,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 interface PdfViewerProps {
   src: string;
   title: string;
-  author: string;
+  subtitle: string;
+  tocItems?: TocItem[];
 }
 
-export default function PdfViewer({ src, title, author }: PdfViewerProps) {
+export default function PdfViewer({ src, title, subtitle, tocItems }: PdfViewerProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentZoom, setCurrentZoom] = useState(75);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -23,8 +25,37 @@ export default function PdfViewer({ src, title, author }: PdfViewerProps) {
   const [pdfDocument, setPdfDocument] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<any>(null);
+
+  // 모바일에서만 사이드바를 기본적으로 숨김
+  useEffect(() => {
+    const checkIsMobile = () => {
+      return window.innerWidth <= 768;
+    };
+    
+    if (checkIsMobile()) {
+      setSidebarVisible(false);
+    } else {
+      setSidebarVisible(true);
+    }
+
+    // 윈도우 리사이즈 이벤트 리스너
+    const handleResize = () => {
+      if (checkIsMobile()) {
+        setSidebarVisible(false);
+      } else {
+        setSidebarVisible(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // PDF 전체 로딩
   useEffect(() => {
@@ -157,9 +188,9 @@ export default function PdfViewer({ src, title, author }: PdfViewerProps) {
     }
   };
 
-  const goToSection = (sectionNum: number) => {
-    if (sectionNum >= 1 && sectionNum <= totalPages) {
-      setCurrentPage(sectionNum);
+  const goToSection = (pageNum: number) => {
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum);
     }
   };
 
@@ -177,6 +208,45 @@ export default function PdfViewer({ src, title, author }: PdfViewerProps) {
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
+  };
+
+  // PDF 다운로드 함수
+  const downloadPdf = async () => {
+    try {
+      setDownloading(true);
+      
+      // 파일명에서 확장자 제거하고 다운로드용 파일명 생성
+      const fileName = src.split('/').pop() || 'document.pdf';
+      const downloadFileName = fileName.replace(/\.pdf$/i, '') + '.pdf';
+      
+      // fetch를 사용하여 PDF 파일 다운로드
+      const response = await fetch(src);
+      if (!response.ok) {
+        throw new Error('PDF 파일을 다운로드할 수 없습니다.');
+      }
+      
+      const blob = await response.blob();
+      
+      // Blob URL 생성 및 다운로드
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = downloadFileName;
+      
+      // DOM에 추가하고 클릭 후 제거
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Blob URL 해제
+      window.URL.revokeObjectURL(url);
+      
+    } catch (err) {
+      console.error('PDF 다운로드 실패:', err);
+      alert('PDF 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   // 키보드 단축키
@@ -243,33 +313,73 @@ export default function PdfViewer({ src, title, author }: PdfViewerProps) {
           </Link>
           <div className="book-info-header">
             <div className="book-title-header">{title}</div>
-            {author && <div className="book-author-header">{author}</div>}
+            {subtitle && <div className="book-subtitle-header">{subtitle}</div>}
           </div>
         </div>
         <div className="header-right">
-          <button className="download-btn" onClick={() => window.open(src, '_blank')}>
-            📄 PDF 다운로드
+          <button 
+            className="mobile-toc-toggle"
+            onClick={toggleSidebar}
+            aria-label="목차 토글"
+          >
+            목차
+          </button>
+          <button 
+            className="download-btn" 
+            onClick={downloadPdf}
+            disabled={downloading}
+          >
+            {downloading ? (
+              <>
+                <span className="loading-spinner-small"></span>
+                다운로드 중...
+              </>
+            ) : (
+              <>
+                📄 PDF 다운로드
+              </>
+            )}
           </button>
         </div>
       </div>
 
       {/* 메인 컨테이너 */}
       <div className="main-container">
+        {/* 사이드바 오버레이 (모바일용) */}
+        {sidebarVisible && (
+          <div 
+            className="sidebar-overlay active"
+            onClick={toggleSidebar}
+          />
+        )}
+        
         {/* 사이드바 (목차) */}
         <div className={`sidebar ${!sidebarVisible ? 'hidden' : ''}`}>
           <div className="sidebar-header">
             <div className="sidebar-title">📖 목차</div>
           </div>
           <div className="toc-list">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <div
-                key={index}
-                className={`toc-item ${currentPage === index + 1 ? 'active' : ''}`}
-                onClick={() => goToSection(index + 1)}
-              >
-                {index + 1}페이지
-              </div>
-            ))}
+            {tocItems && tocItems.length > 0 ? (
+              tocItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`toc-item ${currentPage === item.page ? 'active' : ''}`}
+                  onClick={() => goToSection(item.page)}
+                >
+                  <div className="toc-title">{item.title}</div>
+                </div>
+              ))
+            ) : (
+              Array.from({ length: totalPages }, (_, index) => (
+                <div
+                  key={index}
+                  className={`toc-item ${currentPage === index + 1 ? 'active' : ''}`}
+                  onClick={() => goToSection(index + 1)}
+                >
+                  {index + 1}페이지
+                </div>
+              ))
+            )}
           </div>
         </div>
 
