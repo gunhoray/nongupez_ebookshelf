@@ -5,7 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 // react-reader를 동적으로 import (SSR 회피)
-const ReactReader = dynamic(() => import('react-reader'), {
+const ReactReader = dynamic(() => import('react-reader').then(mod => ({ default: mod.ReactReader })), {
   ssr: false,
   loading: () => <div className="loading-spinner">로딩 중...</div>
 });
@@ -83,15 +83,8 @@ export default function EpubViewer({ src, title, subtitle }: EpubViewerProps) {
             <div className="pdf-container">
               <ReactReader
                 url={src}
-                location={location}
+                location={location || undefined}
                 locationChanged={handleLocationChange}
-                styles={{
-                  container: {
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: 'none'
-                  }
-                }}
               />
             </div>
           </div>

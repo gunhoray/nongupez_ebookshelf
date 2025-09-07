@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface PdfThumbnailProps {
   src: string;
@@ -25,11 +26,14 @@ export default function PdfThumbnail({ src, alt, className = '', fallbackEmoji =
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
       className={`pdf-thumbnail ${className}`}
       onError={handleImageError}
+      width={300}
+      height={280}
+      style={{ objectFit: 'cover' }}
     />
   );
 }

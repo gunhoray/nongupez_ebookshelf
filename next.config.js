@@ -8,16 +8,36 @@ const nextConfig = {
     };
     return config;
   },
-  // 정적 파일 서빙을 위한 설정
-  async rewrites() {
+  // Vercel 배포를 위한 최적화
+  output: 'standalone',
+  // 정적 파일 서빙을 위한 설정 (Vercel에서는 public 폴더가 자동으로 서빙됨)
+  async headers() {
     return [
       {
         source: '/guides_pdf/:path*',
-        destination: '/public/guides_pdf/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/pdf',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
       },
       {
         source: '/ebooks/:path*',
-        destination: '/public/ebooks/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/epub+zip',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
       },
     ];
   },

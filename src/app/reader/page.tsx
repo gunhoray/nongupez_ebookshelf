@@ -1,13 +1,14 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import PdfViewer from '@/components/PdfViewer';
 import EpubViewer from '@/components/EpubViewer';
 import { tocData, TocItem } from '@/lib/tocData';
 import { formatFileNameToTitle, getSubtitleForFile } from '@/lib/utils';
 
-export default function ReaderPage() {
+function ReaderContent() {
   const searchParams = useSearchParams();
   const type = searchParams.get('type');
   const src = searchParams.get('src');
@@ -36,9 +37,9 @@ export default function ReaderPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">잘못된 접근</h1>
           <p className="text-gray-600 mb-4">올바른 책 정보가 필요합니다.</p>
-          <a href="/" className="text-orange-500 hover:text-orange-600">
+          <Link href="/" className="text-orange-500 hover:text-orange-600">
             메인으로 돌아가기
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -62,5 +63,17 @@ export default function ReaderPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ReaderPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="loading-spinner">로딩 중...</div>
+      </div>
+    </div>}>
+      <ReaderContent />
+    </Suspense>
   );
 }

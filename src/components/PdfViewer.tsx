@@ -5,8 +5,10 @@ import Link from 'next/link';
 import * as pdfjsLib from 'pdfjs-dist';
 import { TocItem } from '@/lib/tocData';
 
-// PDF.js worker 설정 - Next.js public 폴더에서 worker 로드
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+// PDF.js worker 설정 - Vercel 배포를 위한 동적 경로 설정
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+}
 
 // PDF.js 설정
 
@@ -275,7 +277,7 @@ export default function PdfViewer({ src, title, subtitle, tocItems }: PdfViewerP
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, nextPage, prevPage, toggleSidebar]);
 
   if (loading) {
     return (
