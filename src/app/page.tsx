@@ -8,6 +8,7 @@ interface Book {
   author: string;
   emoji: string;
   type: 'pdf' | 'epub';
+  filename?: string;
 }
 
 const books: Book[] = [
@@ -16,56 +17,16 @@ const books: Book[] = [
     title: '농업e지 안내서',
     author: '농촌진흥청',
     emoji: '🌱',
-    type: 'pdf'
+    type: 'pdf',
+    filename: '250808_농업e지_안내서_기존.pdf'
   },
   {
     id: 2,
     title: '농업e지 경영체교재',
     author: '농촌진흥청',
     emoji: '🚜',
-    type: 'pdf'
-  },
-  {
-    id: 3,
-    title: '스마트팜 운영 가이드',
-    author: '농촌진흥청',
-    emoji: '🌾',
-    type: 'epub'
-  },
-  {
-    id: 4,
-    title: '농기계 활용 매뉴얼',
-    author: '농업기술센터',
-    emoji: '💧',
-    type: 'epub'
-  },
-  {
-    id: 5,
-    title: '작물 재배 기술',
-    author: '농업과학기술원',
-    emoji: '🌿',
-    type: 'epub'
-  },
-  {
-    id: 6,
-    title: '관수 시스템 관리',
-    author: '한국농어촌공사',
-    emoji: '📊',
-    type: 'epub'
-  },
-  {
-    id: 7,
-    title: '친환경 농업 실무',
-    author: '친환경농업연구소',
-    emoji: '🌡️',
-    type: 'epub'
-  },
-  {
-    id: 8,
-    title: '농업 데이터 분석',
-    author: '농업기술실용화재단',
-    emoji: '🍃',
-    type: 'epub'
+    type: 'pdf',
+    filename: '250814_농업e지_경영체교재_기본.pdf'
   }
 ];
 
@@ -79,10 +40,12 @@ export default function Home() {
   const openEbook = (book: Book) => {
     if (book.type === 'pdf') {
       // PDF 뷰어로 이동
-      window.location.href = `/reader?type=pdf&src=/guides_pdf/${encodeURIComponent(book.title)}.pdf`;
+      const filename = book.filename || `${book.title}.pdf`;
+      window.location.href = `/reader?type=pdf&src=/guides_pdf/${encodeURIComponent(filename)}`;
     } else {
       // EPUB 뷰어로 이동
-      window.location.href = `/reader?type=epub&src=/ebooks/${encodeURIComponent(book.title)}.epub`;
+      const filename = book.filename || `${book.title}.epub`;
+      window.location.href = `/reader?type=epub&src=/ebooks/${encodeURIComponent(filename)}`;
     }
   };
 
@@ -128,20 +91,6 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="stats-cards">
-              <div className="stat-card">
-                <div className="stat-number">{books.length}</div>
-                <div className="stat-label">총 전자책</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">{books.filter(b => b.type === 'pdf').length}</div>
-                <div className="stat-label">PDF 교재</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">{books.filter(b => b.type === 'epub').length}</div>
-                <div className="stat-label">EPUB 교재</div>
-              </div>
-            </div>
           </main>
         </div>
       </div>

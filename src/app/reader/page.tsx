@@ -18,7 +18,7 @@ export default function ReaderPage() {
       if (fileName) {
         setBookInfo({
           title: decodeURIComponent(fileName),
-          author: '농촌진흥청' // 기본값, 실제로는 메타데이터에서 가져와야 함
+          author: '' // 저자 정보 제거
         });
       }
     }
