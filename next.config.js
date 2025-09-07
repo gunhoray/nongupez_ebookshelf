@@ -9,7 +9,6 @@ const nextConfig = {
     return config;
   },
   // Vercel 배포를 위한 최적화
-  output: 'standalone',
   // 정적 파일 서빙을 위한 설정 (Vercel에서는 public 폴더가 자동으로 서빙됨)
   async headers() {
     return [
